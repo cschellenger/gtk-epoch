@@ -11,17 +11,29 @@ static void text_changed(GtkWidget *millis_entry, gpointer data)
   char outtime[80];
   time_t seconds;
   struct tm ts;
+
   if (strlen(currText) > 0)
   {
+    /* Check that the character just added is a digit. */
     if (!g_ascii_isdigit (currText[strlen(currText) - 1]))
     {
       g_print("Ignoring non-digit char\n");
-      gtk_entry_set_text(GTK_ENTRY(millis_entry), g_strndup(currText, strlen(currText) - 1));
+      /* Not a digit. Revert this change by cloning the text minus the last character. */
+      currText = g_strndup(currText, strlen(currText) - 1);
+      /* Reset the input text */
+      gtk_entry_set_text(GTK_ENTRY(millis_entry), currText);
     }
-    currText = gtk_editable_get_chars (GTK_EDITABLE(millis_entry), 0, -1);
+
+    /* Convert milliseconds to seconds as time_t */
     seconds = (time_t)(strtoll(currText, NULL, 0) / 1000);
+
+    /* Get localized time */
     ts = *localtime(&seconds);
+
+    /* Print formatted time to string */
     strftime(outtime, sizeof(outtime), "%Y-%m-%d %H:%M:%S %Z", &ts);
+
+    /* Set the output text */
     gtk_entry_set_text(GTK_ENTRY(data), outtime);
   }
 }
